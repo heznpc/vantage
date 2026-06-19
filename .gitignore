@@ -1,0 +1,67 @@
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# --- Secrets / local config (never commit) ---
+.env
+.env.*
+!.env.sample
+*.pem
+*.key
+secrets.*
+*.local
+
+# --- Python (ai-agent / perception / spatial) ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.uv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+
+# --- Node / Next.js (frontend) ---
+node_modules/
+.next/
+out/
+.pnpm-store/
+npm-debug.log*
+pnpm-debug.log*
+
+# --- Java / Gradle (backend) ---
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- Terraform (infra) ---
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+# NOTE: .terraform.lock.hcl MUST be committed (audit fix H5)
+
+# --- ML artifacts / models / data (pin via MODEL_CARD, do not commit blobs) ---
+*.pt
+*.pth
+*.onnx
+*.engine
+*.gguf
+weights/
+checkpoints/
+data/
+clips/
+*.mp4
+*.avi
+# keep small eval result tables
+!**/ablation_result.csv
+
+# --- Eval / runtime outputs ---
+runs/
+outputs/
+*.log
