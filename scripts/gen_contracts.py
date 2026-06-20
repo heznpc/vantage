@@ -67,6 +67,7 @@ def build():
     manifest: dict[str, dict] = {}
     blocks: list[str] = []
     needs_optional = False
+    needs_any = False
 
     for name in sorted(schemas):
         fields = list(_fields(schemas[name]))
@@ -75,6 +76,8 @@ def build():
         if not fields:
             lines.append("    pass")
         for n, t, r in fields:
+            if "Any" in t:
+                needs_any = True
             if r:
                 lines.append(f"    {n}: {t}")
             else:
@@ -89,10 +92,9 @@ def build():
         "",
         "from dataclasses import dataclass",
     ]
-    if needs_optional:
-        header.append("from typing import Any, Optional")
-    else:
-        header.append("from typing import Any")
+    typing_imports = [n for n, needed in (("Any", needs_any), ("Optional", needs_optional)) if needed]
+    if typing_imports:
+        header.append(f"from typing import {', '.join(typing_imports)}")
     models_py = "\n".join(header) + "\n\n\n" + "\n\n\n".join(blocks) + "\n"
     manifest_json = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
     return models_py, manifest_json
