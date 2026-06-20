@@ -1,0 +1,54 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.19"
+
+      - name: Install toolchain
+        run: |
+          uv python install 3.12
+          uv sync --frozen || uv sync
+
+      - name: Lint
+        run: uv run ruff check .
+
+      # --- HARD GATE: contracts SSOT must equal committed generated/ (audit fix H2) ---
+      - name: Contracts drift gate
+        run: |
+          uv run python scripts/gen_contracts.py
+          git diff --exit-code contracts/generated \
+            || (echo "::error::contracts/generated is stale — run 'python scripts/gen_contracts.py' and commit" && exit 1)
+
+      # --- HARD GATE: reproducibility + CSV schema + no-drift ---
+      - name: Tests
+        run: uv run pytest -q
+
+      # --- REPORT-ONLY: performance never blocks the merge (eval-harness §7 Phase 1) ---
+      - name: Eval (report-only)
+        run: |
+          uv run python eval/harness.py --backbone rtmo --no-bev --no-calibrated --out eval/out/pose_only.csv
+          uv run python eval/harness.py --backbone rtmo --bev --calibrated --out eval/out/bev.csv
+          uv run python eval/validate_csv.py eval/out/pose_only.csv
+          uv run python eval/validate_csv.py eval/out/bev.csv
+
+      - name: Upload ablation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ablation-results
+          path: eval/out/*.csv

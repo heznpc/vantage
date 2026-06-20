@@ -1,0 +1,104 @@
+openapi: 3.1.0
+info:
+  title: Vantage REST API
+  version: 0.1.0
+  description: >
+    Single source of truth (SSOT) for Vantage REST contracts. Code/types under
+    contracts/generated/ are derived from THIS file by scripts/gen_contracts.py and
+    gated for drift in CI. Never hand-edit generated artifacts.
+    Audit fix H2: the HITL decision field is `userEmail` here and in asyncapi.yaml
+    (ActionResolved) — one spelling, one source — so the original userEmail/userMail
+    drift cannot recur.
+servers:
+  - url: http://localhost:8080
+paths:
+  /events:
+    get:
+      operationId: listEvents
+      summary: List anomaly/theft events
+      responses:
+        '200':
+          description: events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Event' }
+    post:
+      operationId: createEvent
+      summary: Ingest a detected event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Event' }
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Event' }
+  /pending-actions:
+    get:
+      operationId: listPendingActions
+      summary: List HITL pending actions
+      responses:
+        '200':
+          description: pending actions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PendingAction' }
+  /pending-actions/{id}/decision:
+    post:
+      operationId: decidePendingAction
+      summary: HITL approve/deny a pending action
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActionDecision' }
+      responses:
+        '200':
+          description: resolved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PendingAction' }
+components:
+  schemas:
+    Event:
+      type: object
+      required: [id, camera_id, started_at, kind, risk, status]
+      properties:
+        id: { type: string, format: uuid }
+        camera_id: { type: string }
+        started_at: { type: string, format: date-time }
+        kind: { type: string, enum: [theft_suspected, loitering, intrusion, other] }
+        risk: { type: number, description: "pre-theft risk in [0,1]" }
+        lead_time_s: { type: number, description: "anticipation lead time (s); omitted if uncalibrated" }
+        status: { type: string, enum: [open, escalated, resolved] }
+    PendingAction:
+      type: object
+      required: [id, event_id, action, reversible, created_at, status]
+      properties:
+        id: { type: string, format: uuid }
+        event_id: { type: string, format: uuid }
+        action: { type: string, enum: [spotlight, voice_warning, notify, dispatch, escalate] }
+        reversible: { type: boolean }
+        created_at: { type: string, format: date-time }
+        expires_at: { type: string, format: date-time }
+        status: { type: string, enum: [pending, approved, denied, expired] }
+    ActionDecision:
+      type: object
+      description: "HITL decision. Field name is userEmail (SSOT; fixes original userEmail/userMail drift)."
+      required: [decision, userEmail]
+      properties:
+        decision: { type: string, enum: [approve, deny] }
+        userEmail: { type: string, format: email }
+        resolved_at: { type: string, format: date-time }

@@ -1,0 +1,18 @@
+{
+  "clip_set": "synthetic-v1",
+  "note": "Deterministic synthetic fixture for harness self-test. NOT real data; scores overlap on purpose so the ablation axis (pose-only vs +BEV) is visible. Real CCTV/PoseLift clips replace this in M2/M3 (docs/eval-harness.md, owner decision #1).",
+  "tracks": [
+    { "track_id": "t01", "label": "theft",  "feature_seed": 1011, "frames": 60, "event_complete_frame": 41, "hidden": true },
+    { "track_id": "t02", "label": "normal", "feature_seed": 2022, "frames": 60, "event_complete_frame": null, "hidden": false },
+    { "track_id": "t03", "label": "theft",  "feature_seed": 3033, "frames": 72, "event_complete_frame": 55, "hidden": true },
+    { "track_id": "t04", "label": "normal", "feature_seed": 4044, "frames": 48, "event_complete_frame": null, "hidden": false },
+    { "track_id": "t05", "label": "normal", "feature_seed": 5055, "frames": 60, "event_complete_frame": null, "hidden": false },
+    { "track_id": "t06", "label": "theft",  "feature_seed": 6066, "frames": 64, "event_complete_frame": 49, "hidden": true },
+    { "track_id": "t07", "label": "normal", "feature_seed": 7077, "frames": 55, "event_complete_frame": null, "hidden": false },
+    { "track_id": "t08", "label": "theft",  "feature_seed": 8088, "frames": 68, "event_complete_frame": 52, "hidden": true },
+    { "track_id": "t09", "label": "normal", "feature_seed": 9099, "frames": 50, "event_complete_frame": null, "hidden": false },
+    { "track_id": "t10", "label": "theft",  "feature_seed": 1212, "frames": 66, "event_complete_frame": 47, "hidden": true },
+    { "track_id": "t11", "label": "normal", "feature_seed": 1313, "frames": 58, "event_complete_frame": null, "hidden": false },
+    { "track_id": "t12", "label": "theft",  "feature_seed": 1414, "frames": 70, "event_complete_frame": 53, "hidden": true }
+  ]
+}
