@@ -1,0 +1,86 @@
+asyncapi: 3.0.0
+info:
+  title: Vantage Event Bus
+  version: 0.1.0
+  description: >
+    SSOT for asynchronous channels (Redis Streams). Payload schemas under
+    components.schemas drive codegen via scripts/gen_contracts.py (CI drift-gated).
+    `userEmail` in ActionResolved matches contracts/openapi.yaml (ActionDecision) — H2.
+channels:
+  perceptionWindow:
+    address: perception.window
+    messages:
+      perceptionWindow: { $ref: '#/components/messages/PerceptionWindow' }
+  predictionTrajectory:
+    address: prediction.trajectory
+    messages:
+      trajectoryPrediction: { $ref: '#/components/messages/TrajectoryPrediction' }
+  actionRequested:
+    address: action.requested
+    messages:
+      actionRequested: { $ref: '#/components/messages/ActionRequested' }
+  actionResolved:
+    address: action.resolved
+    messages:
+      actionResolved: { $ref: '#/components/messages/ActionResolved' }
+operations:
+  sendPerceptionWindow:
+    action: send
+    channel: { $ref: '#/channels/perceptionWindow' }
+  sendTrajectoryPrediction:
+    action: send
+    channel: { $ref: '#/channels/predictionTrajectory' }
+  requestAction:
+    action: send
+    channel: { $ref: '#/channels/actionRequested' }
+  resolveAction:
+    action: send
+    channel: { $ref: '#/channels/actionResolved' }
+components:
+  messages:
+    PerceptionWindow:
+      payload: { $ref: '#/components/schemas/PerceptionWindow' }
+    TrajectoryPrediction:
+      payload: { $ref: '#/components/schemas/TrajectoryPrediction' }
+    ActionRequested:
+      payload: { $ref: '#/components/schemas/ActionRequested' }
+    ActionResolved:
+      payload: { $ref: '#/components/schemas/ActionResolved' }
+  schemas:
+    PerceptionWindow:
+      type: object
+      required: [track_id, camera_id, ts, anomaly_score]
+      properties:
+        track_id: { type: string }
+        camera_id: { type: string }
+        ts: { type: string, format: date-time }
+        anomaly_score: { type: number }
+        keypoints_present: { type: boolean }
+    TrajectoryPrediction:
+      type: object
+      required: [track_id, camera_id, ts, pre_theft_risk, calibrated]
+      properties:
+        track_id: { type: string }
+        camera_id: { type: string }
+        ts: { type: string, format: date-time }
+        bev_points: { type: array, items: { type: array, items: { type: number } } }
+        zone_eta_s: { type: number, description: "suppressed (omitted) when calibrated=false" }
+        pre_theft_risk: { type: number }
+        lead_time_s: { type: number, description: "suppressed when calibrated=false" }
+        calibrated: { type: boolean }
+    ActionRequested:
+      type: object
+      required: [pending_action_id, event_id, action, reversible]
+      properties:
+        pending_action_id: { type: string, format: uuid }
+        event_id: { type: string, format: uuid }
+        action: { type: string, enum: [spotlight, voice_warning, notify, dispatch, escalate] }
+        reversible: { type: boolean }
+    ActionResolved:
+      type: object
+      required: [pending_action_id, decision, userEmail, resolved_at]
+      properties:
+        pending_action_id: { type: string, format: uuid }
+        decision: { type: string, enum: [approve, deny] }
+        userEmail: { type: string, format: email }
+        resolved_at: { type: string, format: date-time }

@@ -58,8 +58,8 @@ data/
 clips/
 *.mp4
 *.avi
-# keep small eval result tables
-!**/ablation_result.csv
+# eval harness run outputs (generated)
+eval/out/
 
 # --- Eval / runtime outputs ---
 runs/

@@ -2,8 +2,10 @@
 
 **Spatial-grounded predictive CCTV anomaly / theft detection — detector-first.**
 
-> Status: **M0 design snapshot** (2026-06-19). Not yet implemented — this commit is the
-> design baseline that the build will be held to. See [REBUILD_DESIGN.md](REBUILD_DESIGN.md).
+> Status: **M1 in progress** (2026-06-20). The M0 design baseline is frozen
+> ([REBUILD_DESIGN.md](REBUILD_DESIGN.md)); M1 adds the runnable skeleton — a contracts
+> single-source-of-truth with a codegen drift-gate, and a deterministic eval harness with
+> the pose-only vs +BEV ablation. Perception/spatial models land in M2/M3.
 
 ## What this is
 
@@ -45,6 +47,17 @@ camera → RTMO/RTMPose (pose) → ByteTrack → ST-GCN+TCN temporal scorer   �
 
 Repository license: **Apache-2.0** ([LICENSE](LICENSE), [NOTICE](NOTICE)).
 Per-model weight licenses and source pins: [MODEL_CARD.md](MODEL_CARD.md).
+
+## Running the M1 skeleton
+
+```bash
+make gen-contracts          # regenerate typed models from contracts/*.yaml (single source of truth)
+make test                   # hard gates: reproducibility + CSV schema + contract no-drift (stdlib)
+make eval && make validate  # report-only ablation: pose-only vs +BEV
+```
+
+CI (`.github/workflows/ci.yml`) enforces the same hard gates plus a contracts drift check;
+performance numbers are uploaded as artifacts and never block the merge (eval gate Phase 1).
 
 ## Documents
 

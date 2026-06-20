@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vantage.local/schemas/ablation_result_row.json",
+  "title": "ablation_result row",
+  "description": "One metric measurement from the replay harness. CSV values are strings; 'NA' is allowed for value/ci when a metric is suppressed (e.g. ETA without calibration).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "timestamp", "clip_set", "backbone", "bev_enabled", "forecast", "calibrated", "metric", "value", "ci_low", "ci_high", "notes"],
+  "properties": {
+    "run_id": { "type": "string", "minLength": 1 },
+    "timestamp": { "type": "string" },
+    "clip_set": { "type": "string", "minLength": 1 },
+    "backbone": { "enum": ["rtmo", "rtmpose-m", "rtmpose-s", "yolo26"] },
+    "bev_enabled": { "enum": ["true", "false"] },
+    "forecast": { "enum": ["none", "kalman", "kalman+gru"] },
+    "calibrated": { "enum": ["true", "false"] },
+    "metric": { "enum": ["keypoint_stability", "id_switch_rate", "temporal_auc", "temporal_eer", "far_at_leadtime", "lead_time_s"] },
+    "value": { "type": "string", "minLength": 1 },
+    "ci_low": { "type": "string", "minLength": 1 },
+    "ci_high": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  }
+}

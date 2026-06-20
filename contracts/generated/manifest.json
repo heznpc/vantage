@@ -1,0 +1,168 @@
+{
+  "ActionDecision": {
+    "decision": {
+      "required": true,
+      "type": "str"
+    },
+    "resolved_at": {
+      "required": false,
+      "type": "str"
+    },
+    "userEmail": {
+      "required": true,
+      "type": "str"
+    }
+  },
+  "ActionRequested": {
+    "action": {
+      "required": true,
+      "type": "str"
+    },
+    "event_id": {
+      "required": true,
+      "type": "str"
+    },
+    "pending_action_id": {
+      "required": true,
+      "type": "str"
+    },
+    "reversible": {
+      "required": true,
+      "type": "bool"
+    }
+  },
+  "ActionResolved": {
+    "decision": {
+      "required": true,
+      "type": "str"
+    },
+    "pending_action_id": {
+      "required": true,
+      "type": "str"
+    },
+    "resolved_at": {
+      "required": true,
+      "type": "str"
+    },
+    "userEmail": {
+      "required": true,
+      "type": "str"
+    }
+  },
+  "Event": {
+    "camera_id": {
+      "required": true,
+      "type": "str"
+    },
+    "id": {
+      "required": true,
+      "type": "str"
+    },
+    "kind": {
+      "required": true,
+      "type": "str"
+    },
+    "lead_time_s": {
+      "required": false,
+      "type": "float"
+    },
+    "risk": {
+      "required": true,
+      "type": "float"
+    },
+    "started_at": {
+      "required": true,
+      "type": "str"
+    },
+    "status": {
+      "required": true,
+      "type": "str"
+    }
+  },
+  "PendingAction": {
+    "action": {
+      "required": true,
+      "type": "str"
+    },
+    "created_at": {
+      "required": true,
+      "type": "str"
+    },
+    "event_id": {
+      "required": true,
+      "type": "str"
+    },
+    "expires_at": {
+      "required": false,
+      "type": "str"
+    },
+    "id": {
+      "required": true,
+      "type": "str"
+    },
+    "reversible": {
+      "required": true,
+      "type": "bool"
+    },
+    "status": {
+      "required": true,
+      "type": "str"
+    }
+  },
+  "PerceptionWindow": {
+    "anomaly_score": {
+      "required": true,
+      "type": "float"
+    },
+    "camera_id": {
+      "required": true,
+      "type": "str"
+    },
+    "keypoints_present": {
+      "required": false,
+      "type": "bool"
+    },
+    "track_id": {
+      "required": true,
+      "type": "str"
+    },
+    "ts": {
+      "required": true,
+      "type": "str"
+    }
+  },
+  "TrajectoryPrediction": {
+    "bev_points": {
+      "required": false,
+      "type": "list[list[float]]"
+    },
+    "calibrated": {
+      "required": true,
+      "type": "bool"
+    },
+    "camera_id": {
+      "required": true,
+      "type": "str"
+    },
+    "lead_time_s": {
+      "required": false,
+      "type": "float"
+    },
+    "pre_theft_risk": {
+      "required": true,
+      "type": "float"
+    },
+    "track_id": {
+      "required": true,
+      "type": "str"
+    },
+    "ts": {
+      "required": true,
+      "type": "str"
+    },
+    "zone_eta_s": {
+      "required": false,
+      "type": "float"
+    }
+  }
+}
