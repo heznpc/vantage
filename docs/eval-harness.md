@@ -76,7 +76,8 @@ run_id,timestamp,clip_set,backbone,bev_enabled,forecast,calibrated,metric,value,
 
 **전 단계 공통:**
 - 격리 모델(YOLO26)은 기본 CI에서 import/실행되지 않음(프로필 분리 테스트가 강제).
-- 모든 결과 리포트에 **metric-3D GT 부재 caveat**·calibrated 여부·**staged/real 구분**을 자동 첨부.
+- 모든 결과 리포트에 **metric-3D GT 부재 caveat**·calibrated 여부·**synthetic/staged/real 구분**을 자동 첨부.
+- **Threshold 선택(P1 필수):** op θ는 **dev/calibration split**(또는 고정 threshold 파일)에서 고른다. **eval set에서 θ를 sweep 금지**(평가셋 튜닝). P0의 합성 sweep은 자기 set 한정 → plumbing only. `calibrated=true` clip은 `calibration`(homography+reprojection_rms) 블록 필수(validate_manifest 강제), 없으면 공간 metric 금지.
 
 ## 8. 산출 artifact (재현·감사용)
 

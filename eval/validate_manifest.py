@@ -41,6 +41,15 @@ def validate_doc(m: dict) -> tuple[list[str], list[str]]:
     if ev.get("from") == ev.get("to"):
         errs.append(f"{cid}: zones.exit_vector is degenerate (from == to)")
 
+    cal = m.get("calibration")
+    if m.get("calibrated") is True:
+        if not cal:
+            errs.append(f"{cid}: calibrated=true requires a 'calibration' block (homography + reprojection_rms + n_points)")
+        elif not isinstance(cal.get("reprojection_rms"), (int, float)):
+            errs.append(f"{cid}: calibration.reprojection_rms must be a number")
+    elif m.get("calibrated") is False and cal:
+        warns.append(f"{cid}: calibrated=false but a 'calibration' block is present (it will be ignored)")
+
     if sid in NOT_IN_P0:
         warns.append(f"{cid}: scenario {sid} is not handled by the P0 pipeline")
 

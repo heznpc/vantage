@@ -40,7 +40,7 @@
 - `calibrated: false` → pixels; report **relative/ordinal anticipation only**.
 
 ## Staged vs real
-- `split: staged | real`. **Headline metrics must be `real`.** Staged clips are for development/ablation; report staged and real side-by-side with the gap explicit (RetailS staged→real: AUC-PR 86.60→38.44).
+- `split: synthetic | staged | real`. **Headline metrics must be `real`.** `synthetic` = plumbing only (no claims); `staged` = acted/instrumented (dev/ablation); report staged and real side-by-side with the gap explicit (RetailS staged→real: AUC-PR 86.60→38.44).
 
 ## Forbidden / pitfalls (from R1)
 - **All-frames-positive** labeling (no temporal structure) → anticipation unmeasurable.

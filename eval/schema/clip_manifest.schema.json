@@ -13,6 +13,17 @@
     "fps": { "type": "number", "exclusiveMinimum": 0 },
     "calibrated": { "type": "boolean" },
     "split": { "enum": ["synthetic", "staged", "real"], "description": "provenance — synthetic=plumbing only; staged=acted/instrumented; real=in-the-wild" },
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "REQUIRED when calibrated=true (validate_manifest enforces): floor homography (image->ground, 3x3 row-major) + fit quality. Without it, spatial/metric outputs are not permitted (R1).",
+      "required": ["homography", "reprojection_rms", "n_points"],
+      "properties": {
+        "homography": { "type": "array", "items": { "type": "number" }, "minItems": 9, "maxItems": 9 },
+        "reprojection_rms": { "type": "number", "minimum": 0 },
+        "n_points": { "type": "integer", "minimum": 4 }
+      }
+    },
     "zones": {
       "type": "object",
       "additionalProperties": false,

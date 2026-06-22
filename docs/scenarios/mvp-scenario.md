@@ -38,6 +38,9 @@ and must not be used to judge the system.
 - **The shelf, the concealment region, and the exit path are all within view.**
 - `zones.exit_vector` in the clip manifest encodes this exit direction; if it can't be drawn
   truthfully for a clip, the clip does not qualify for S1.
+- **P1 data must include ≥1 *hard* case** where exit and checkout are only weakly separated in the
+  image plane. If every clip has a cleanly separated exit (as the synthetic P0 set does), results
+  read as "cherry-picked cameras where trajectory trivially works" — which defeats the 3-arm test.
 
 ## M2 — definition of done (redefined)
 
