@@ -18,17 +18,17 @@ Implements the M1 verification skeleton from [../docs/eval-harness.md](../docs/e
 ## Run
 ```bash
 # pose-only baseline
-python3 eval/harness.py --backbone rtmo --no-bev --no-calibrated --out eval/out/pose_only.csv
+uv run python eval/harness.py --backbone rtmo --no-bev --no-calibrated --out eval/out/pose_only.csv
 # +BEV (the ablation treatment)
-python3 eval/harness.py --backbone rtmo --bev --calibrated --out eval/out/bev.csv
-python3 eval/validate_csv.py eval/out/bev.csv
+uv run python eval/harness.py --backbone rtmo --bev --calibrated --out eval/out/bev.csv
+uv run python eval/validate_csv.py eval/out/bev.csv
 ```
 
 ## Data-path & 3-arm anticipation (P0)
 
 ```bash
-python3 eval/synth.py          # (re)generate synthetic clips into eval/clips/
-python3 eval/anticipation.py   # 3-arm: τ/t_θ → TTA@R80, AUC-PR + pre-registered BEV decision
+uv run python eval/synth.py          # (re)generate synthetic clips into eval/clips/
+uv run python eval/anticipation.py   # 3-arm: τ/t_θ → TTA@R80, AUC-PR + pre-registered BEV decision
 ```
 
 The ablation that actually matters is **3-arm** — `pose_only` vs `pose_2d_traj` (image-plane

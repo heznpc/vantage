@@ -6,12 +6,12 @@ clip_id: syn_S0_01
 fps: 15
 notes: SYNTHETIC instrumented-pilot. Plumbing only; not evidence about +BEV.
 scenario_id: S0
-split: staged
+split: synthetic
 tracks:
   primary_actor_track_id: t-actor-1
 valid_prediction_window:
   end_frame: null
-  start_frame: 0
+  start_frame: null
 zones:
   exit_vector:
     from:

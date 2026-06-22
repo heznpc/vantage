@@ -121,12 +121,12 @@ def _manifest(clip_id, scenario, anchors):
         "scenario_id": scenario,
         "fps": FPS,
         "calibrated": False,  # synthetic image space; uncalibrated -> relative anticipation only
-        "split": "staged",    # synthetic instrumented-pilot, NOT real-world proof
+        "split": "synthetic",  # plumbing only, NOT real-world proof (provenance is explicit, not by filename)
         "zones": {"shelf_zone": SHELF_ZONE, "occlusion_zone": OCCL_ZONE,
                   "exit_vector": {"from": list(SHELF), "to": list(EXIT)}},
         "tracks": {"primary_actor_track_id": "t-actor-1"},
         "anchors": anchors or {"event_complete_frame": None},
-        "valid_prediction_window": {"start_frame": 0, "end_frame": (tau - 1) if tau else None},
+        "valid_prediction_window": {"start_frame": 0 if tau else None, "end_frame": (tau - 1) if tau else None},
         "notes": "SYNTHETIC instrumented-pilot. Plumbing only; not evidence about +BEV.",
     }
 

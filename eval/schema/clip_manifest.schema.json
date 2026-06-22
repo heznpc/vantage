@@ -12,7 +12,7 @@
     "scenario_id": { "enum": ["S0", "S1", "S2", "S3", "S4", "S5"] },
     "fps": { "type": "number", "exclusiveMinimum": 0 },
     "calibrated": { "type": "boolean" },
-    "split": { "enum": ["staged", "real"] },
+    "split": { "enum": ["synthetic", "staged", "real"], "description": "provenance — synthetic=plumbing only; staged=acted/instrumented; real=in-the-wild" },
     "zones": {
       "type": "object",
       "additionalProperties": false,
