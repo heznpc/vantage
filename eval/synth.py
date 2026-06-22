@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate synthetic 'instrumented-pilot' pose-sequence clips + manifests.
 
-NOT real data. honestly labeled split=staged, calibrated=false (image px, uncalibrated).
+NOT real data. honestly labeled split=synthetic, calibrated=false (image px, uncalibrated).
 Purpose: make the data-path (manifest -> clip -> harness -> real TTA/FAR/AUC-PR) run
 end-to-end BEFORE real clips are sourced. A synthetic clip proves PLUMBING ONLY — never
 a result about whether +BEV helps. Real / staged clips (P1) drop into the same path.

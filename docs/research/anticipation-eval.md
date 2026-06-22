@@ -76,6 +76,7 @@
 - The synthetic fixture already carries `event_complete_frame` → wire the real τ/t_θ anchors through the same field on re-annotated clips.
 - Extend the `ablation_result` metric enum (in M2, with the real pipeline) to: `auc_pr_real`, `tta_at_r80`, `mtta_far_gated`, `lead_time_vs_far` (artifact), `rel_anticipation_delta`; keep current `temporal_auc`/`far_at_leadtime`/`lead_time_s` deprecated/aliased.
 - Gate staging unchanged: **Phase 1 report-only** until real anchors + (for any spatial metric) calibration are locked; **Phase 2 regression** on `auc_pr_real` + `tta_at_r80` against a frozen real baseline.
+- **Threshold selection (P1, mandatory):** pick the operating θ on a **dev/calibration split** (or commit a **fixed per-arm threshold file**); **never sweep θ on the eval set** — that is evaluation-set tuning and inflates every metric. P0's synthetic θ-sweep is on its own tiny set → **plumbing only, not a result**. `calibrated=true` clips must carry a `calibration` block (homography + reprojection_rms); without it, spatial/metric outputs are forbidden (validate_manifest enforces).
 
 ## 7. Open questions (carry to R2 / M2)
 

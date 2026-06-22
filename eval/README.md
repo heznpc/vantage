@@ -13,7 +13,7 @@ Implements the M1 verification skeleton from [../docs/eval-harness.md](../docs/e
 - `anticipation.py` — **3-arm data-path** (`pose_only` / `pose_2d_traj` / `pose_bev`): manifest+clip →
   per-frame risk → τ/t_θ → FAR-gated **TTA@R80**, **AUC-PR** + a **pre-registered BEV decision rule**.
 - `schema/clip_manifest.schema.json`, `schema/anticipation_result.schema.json`.
-- `clips/` — synthetic instrumented-pilot clips (`*.clip.json` + `*.manifest.yaml`, `split: staged`).
+- `clips/` — synthetic instrumented-pilot clips (`*.clip.json` + `*.manifest.yaml`, `split: synthetic`).
 
 ## Run
 ```bash
@@ -38,7 +38,7 @@ differentiator only if it beats 2D-trajectory**, not pose-only. The **pre-regist
 results can't move the goalposts; it can return `BEV_rejected`.
 
 **Honesty (P0 vs P1):**
-- **P0 = synthetic** (`split: staged`, `clips/syn_*`) proves **plumbing only** — never that BEV helps.
+- **P0 = synthetic** (`split: synthetic`, `clips/syn_*`) proves **plumbing only** — never that BEV helps.
   The CLI prints a `PLUMBING ONLY` banner and `data_kind=synthetic`.
 - **P1 = real / re-annotated staged clips** with a labeled `event_complete` τ — only from here is a
   number a *result*. RTMO/ByteTrack (video→pose) and monocular depth are **deferred** until P1 shows

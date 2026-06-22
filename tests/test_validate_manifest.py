@@ -52,6 +52,15 @@ class TestValidateManifest(unittest.TestCase):
     def test_degenerate_exit_vector_fails(self):
         self.assertTrue(vm.validate_doc(_s1(zones={"exit_vector": {"from": [5, 5], "to": [5, 5]}}))[0])
 
+    def test_calibrated_true_requires_calibration_block(self):
+        errs = vm.validate_doc(_s1(calibrated=True))[0]
+        self.assertTrue(any("calibration" in e for e in errs))
+
+    def test_calibrated_true_with_block_passes(self):
+        m = _s1(calibrated=True,
+                calibration={"homography": [1, 0, 0, 0, 1, 0, 0, 0, 1], "reprojection_rms": 2.4, "n_points": 4})
+        self.assertEqual(vm.validate_doc(m)[0], [])
+
     def test_generated_clips_all_valid(self):
         import tempfile
         with tempfile.TemporaryDirectory() as d:

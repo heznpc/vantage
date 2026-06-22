@@ -7,8 +7,13 @@ clip_id: store01_aisle3_S1_0007
 camera_id: cam-aisle3
 scenario_id: S1
 fps: 15
-calibrated: true          # floor homography available; reprojection RMS tracked separately
+calibrated: true          # floor homography available -> calibration block required (below)
 split: staged             # NOT real — illustrative only
+
+calibration:              # required when calibrated: true (R1: report reprojection RMS)
+  homography: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]   # illustrative 3x3 row-major (image->ground)
+  reprojection_rms: 2.4   # px
+  n_points: 4
 
 zones:
   shelf_zone:             # polygon (>=3 pts)
