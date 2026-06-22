@@ -11,7 +11,7 @@
 > honestly a **detector with an anticipation hypothesis**, not a proven predictive system.
 >
 > **Next — M2** = a replay pipeline that passes S0/S1/S2/S3 (*not* "attach RTMO"); **M3** =
-> show `+BEV` beats `pose-only` on S1 (earlier alert, fewer false alarms).
+> show `+BEV` beats **`+2D-trajectory`** on S1 (3-arm: pose-only / +2D-traj / +BEV — earlier alert, fewer false alarms). If 2D suffices, BEV is rejected.
 
 ## What this is
 
@@ -53,8 +53,9 @@ camera → RTMO/RTMPose (pose) → ByteTrack → ST-GCN+TCN temporal scorer   �
   forward to anticipate an incident **before it completes**. Homography-first; monocular depth
   is auxiliary. An assembly of off-the-shelf parts, **not a trained world model**. Uncalibrated
   ⇒ **relative anticipation only** (no absolute ETA/distance).
-- **Verification:** parity is **measured, not claimed** — `pose-only` vs `+BEV`, reported
-  FAR/recall-gated on **real** clips. See [docs/eval-harness.md](docs/eval-harness.md).
+- **Verification:** parity is **measured, not claimed** — **3-arm** `pose-only` / `+2D-trajectory` /
+  `+BEV` (BEV must beat **2D-trajectory**, not just pose-only), reported FAR/recall-gated on **real**
+  clips. See [docs/eval-harness.md](docs/eval-harness.md), [docs/research/anticipation-eval.md](docs/research/anticipation-eval.md).
 
 ## Licensing (deliberate)
 
@@ -67,13 +68,16 @@ camera → RTMO/RTMPose (pose) → ByteTrack → ST-GCN+TCN temporal scorer   �
 Repository license: **Apache-2.0** ([LICENSE](LICENSE), [NOTICE](NOTICE)).
 Per-model weight licenses and source pins: [MODEL_CARD.md](MODEL_CARD.md).
 
-## Running the M1 skeleton
+## Running
 
 ```bash
-make gen-contracts          # regenerate typed models from contracts/*.yaml (single source of truth)
-make test                   # hard gates: reproducibility + CSV schema + contract no-drift (stdlib)
-make eval && make validate  # report-only ablation: pose-only vs +BEV
+make gen-contracts   # regenerate typed models from contracts/*.yaml (single source of truth)
+make test            # hard gates: reproducibility + CSV schema + contract no-drift + anticipation
+make anticipation    # 3-arm data-path: pose-only / +2D-traj / +BEV + pre-registered BEV decision
+make eval            # (M1 harness) report-only pose-only vs +BEV stub ablation
 ```
+
+All targets run through `uv` (`PYTHON ?= uv run python`) so deps resolve — `make` no longer needs an ambient Python with pyyaml.
 
 CI (`.github/workflows/ci.yml`) enforces the same hard gates plus a contracts drift check;
 performance numbers are uploaded as artifacts and never block the merge (eval gate Phase 1).

@@ -38,6 +38,10 @@ jobs:
       - name: Tests
         run: uv run pytest -q
 
+      # --- HARD GATE: committed clip manifests must be semantically valid ---
+      - name: Manifest validation
+        run: uv run python eval/validate_manifest.py eval/clips
+
       # --- REPORT-ONLY: performance never blocks the merge (eval-harness §7 Phase 1) ---
       - name: Eval (report-only)
         run: |
@@ -45,6 +49,8 @@ jobs:
           uv run python eval/harness.py --backbone rtmo --bev --calibrated --out eval/out/bev.csv
           uv run python eval/validate_csv.py eval/out/pose_only.csv
           uv run python eval/validate_csv.py eval/out/bev.csv
+          uv run python eval/anticipation.py
+          uv run python eval/validate_csv.py eval/out/anticipation_result.csv eval/schema/anticipation_result.schema.json
 
       - name: Upload ablation results
         if: always()

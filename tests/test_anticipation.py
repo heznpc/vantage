@@ -39,17 +39,24 @@ class TestAnticipation(unittest.TestCase):
 
     def test_decision_rule_rejects_when_no_gain(self):
         res = {"arms": {
-            "pose_bev": {"tta_at_recall": (0.5, 1.0, 0.1, 2.0)},
-            "pose_2d_traj": {"tta_at_recall": (0.5, 1.0, 0.1, 2.0)},
+            "pose_bev": {"operating_point": (0.5, 1.0, 0.1, 2.0)},
+            "pose_2d_traj": {"operating_point": (0.5, 1.0, 0.1, 2.0)},
         }}
         self.assertEqual(ant.decide(res)["verdict"], "BEV_rejected")  # gain 0 < DELTA_S
 
     def test_decision_rule_accepts_with_gain_under_far(self):
         res = {"arms": {
-            "pose_bev": {"tta_at_recall": (0.5, 1.0, 0.10, 3.0)},
-            "pose_2d_traj": {"tta_at_recall": (0.5, 1.0, 0.10, 1.0)},
+            "pose_bev": {"operating_point": (0.5, 1.0, 0.10, 3.0)},
+            "pose_2d_traj": {"operating_point": (0.5, 1.0, 0.10, 1.0)},
         }}
         self.assertEqual(ant.decide(res)["verdict"], "BEV_accepted")  # +2.0s, FAR 0.10<=0.30
+
+    def test_decision_inconclusive_when_arm_infeasible(self):
+        res = {"arms": {
+            "pose_bev": {"operating_point": None},  # no feasible FAR-constrained point
+            "pose_2d_traj": {"operating_point": (0.5, 1.0, 0.10, 1.0)},
+        }}
+        self.assertEqual(ant.decide(res)["verdict"], "inconclusive")
 
     def test_pipeline_reproducible_and_schema_valid(self):
         with tempfile.TemporaryDirectory() as d:

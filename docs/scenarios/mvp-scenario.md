@@ -24,6 +24,21 @@ Aegis classified a broad event set (`assault / burglary / dump / swoon / vandali
 - S5 multi-person / accomplices → handled as **"unsupported / low confidence"**, never silently mis-handled.
 - Broad event taxonomy (assault/vandalism/…), multi-camera fusion, physical actuation, VLM-as-classifier.
 
+## Preconditions (camera / scene) — a clip is *in-spec* only if these hold
+
+These are hard assumptions of the S1 design (currently encoded only in `eval/synth.py`). A clip
+that violates them is **out-of-spec** — failure on it is a *data* problem, not a model problem,
+and must not be used to judge the system.
+
+- **Single fixed camera; one primary actor** in frame for the event.
+- **Exit direction and checkout direction are visually separable in the image plane** — i.e. "moving
+  toward the exit" is observable as a distinct direction from "moving toward checkout". If the camera
+  cannot see the exit vector (exit behind camera, head-on aisle), the BEV/trajectory signal is
+  undefined and the clip is out-of-spec.
+- **The shelf, the concealment region, and the exit path are all within view.**
+- `zones.exit_vector` in the clip manifest encodes this exit direction; if it can't be drawn
+  truthfully for a clip, the clip does not qualify for S1.
+
 ## M2 — definition of done (redefined)
 
 M2 is **not** "attach RTMO". M2 is **"a replay pipeline that passes S0/S1/S2/S3"**:
