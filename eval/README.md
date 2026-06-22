@@ -9,6 +9,11 @@ Implements the M1 verification skeleton from [../docs/eval-harness.md](../docs/e
 - `schema/ablation_result.schema.json` — JSON Schema (2020-12) for one result row.
 - `validate_csv.py` — stdlib validator (required keys, no extras, enums).
 - `fixtures/synthetic_tracks.json` — deterministic synthetic fixture (NOT real data).
+- `synth.py` — generates synthetic pose-sequence clips + manifests into `clips/`. **PLUMBING ONLY.**
+- `anticipation.py` — **3-arm data-path** (`pose_only` / `pose_2d_traj` / `pose_bev`): manifest+clip →
+  per-frame risk → τ/t_θ → FAR-gated **TTA@R80**, **AUC-PR** + a **pre-registered BEV decision rule**.
+- `schema/clip_manifest.schema.json`, `schema/anticipation_result.schema.json`.
+- `clips/` — synthetic instrumented-pilot clips (`*.clip.json` + `*.manifest.yaml`, `split: staged`).
 
 ## Run
 ```bash
@@ -18,6 +23,26 @@ python3 eval/harness.py --backbone rtmo --no-bev --no-calibrated --out eval/out/
 python3 eval/harness.py --backbone rtmo --bev --calibrated --out eval/out/bev.csv
 python3 eval/validate_csv.py eval/out/bev.csv
 ```
+
+## Data-path & 3-arm anticipation (P0)
+
+```bash
+python3 eval/synth.py          # (re)generate synthetic clips into eval/clips/
+python3 eval/anticipation.py   # 3-arm: τ/t_θ → TTA@R80, AUC-PR + pre-registered BEV decision
+```
+
+The ablation that actually matters is **3-arm** — `pose_only` vs `pose_2d_traj` (image-plane
+exit motion, **no depth/BEV**) vs `pose_bev` (perspective-weighted pseudo-BEV). **BEV is a real
+differentiator only if it beats 2D-trajectory**, not pose-only. The **pre-registered rule** (in
+`anticipation.py`: `FAR_MAX`, `DELTA_S`, `TARGET_RECALL`) is committed before looking at numbers so
+results can't move the goalposts; it can return `BEV_rejected`.
+
+**Honesty (P0 vs P1):**
+- **P0 = synthetic** (`split: staged`, `clips/syn_*`) proves **plumbing only** — never that BEV helps.
+  The CLI prints a `PLUMBING ONLY` banner and `data_kind=synthetic`.
+- **P1 = real / re-annotated staged clips** with a labeled `event_complete` τ — only from here is a
+  number a *result*. RTMO/ByteTrack (video→pose) and monocular depth are **deferred** until P1 shows
+  BEV is worth it (see [../docs/scenarios/mvp-scenario.md](../docs/scenarios/mvp-scenario.md)).
 
 ## Gate staging (matches docs/eval-harness.md §7)
 - **Phase 1 — report-only (now):** only **reproducibility** (same seed+config ⇒ identical

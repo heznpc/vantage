@@ -1,0 +1,40 @@
+anchors:
+  event_complete_frame: null
+calibrated: false
+camera_id: syn-cam
+clip_id: syn_S0_01
+fps: 15
+notes: SYNTHETIC instrumented-pilot. Plumbing only; not evidence about +BEV.
+scenario_id: S0
+split: staged
+tracks:
+  primary_actor_track_id: t-actor-1
+valid_prediction_window:
+  end_frame: null
+  start_frame: 0
+zones:
+  exit_vector:
+    from:
+    - 640
+    - 300
+    to:
+    - 1180
+    - 360
+  occlusion_zone:
+  - - 900
+    - 320
+  - - 980
+    - 320
+  - - 980
+    - 520
+  - - 900
+    - 520
+  shelf_zone:
+  - - 500
+    - 210
+  - - 780
+    - 210
+  - - 800
+    - 330
+  - - 480
+    - 330

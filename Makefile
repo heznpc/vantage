@@ -1,4 +1,4 @@
-.PHONY: all gen-contracts lint test eval validate clean
+.PHONY: all gen-contracts lint test eval validate anticipation clean
 
 # Default: regenerate contracts, lint, run the hard-gate tests.
 all: gen-contracts lint test
@@ -24,6 +24,11 @@ eval:
 validate:
 	python3 eval/validate_csv.py eval/out/pose_only.csv
 	python3 eval/validate_csv.py eval/out/bev.csv
+
+# 3-arm anticipation data-path (synthetic plumbing): generate clips -> metrics + BEV decision
+anticipation:
+	python3 eval/synth.py
+	python3 eval/anticipation.py
 
 clean:
 	rm -rf eval/out
