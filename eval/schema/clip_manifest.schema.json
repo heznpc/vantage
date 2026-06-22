@@ -31,7 +31,8 @@
       "properties": {
         "shelf_zone": { "$ref": "#/$defs/polygon" },
         "occlusion_zone": { "$ref": "#/$defs/polygon" },
-        "exit_vector": { "$ref": "#/$defs/vector" }
+        "exit_vector": { "$ref": "#/$defs/vector" },
+        "checkout_vector": { "$ref": "#/$defs/vector", "description": "optional; enables the hard-case separation-angle criterion (angle(exit, checkout) <= 60deg = weakly separated)" }
       }
     },
     "tracks": {

@@ -68,6 +68,27 @@ class TestValidateManifest(unittest.TestCase):
             errs, _ = vm.validate_path(Path(d))
             self.assertEqual(errs, [], f"synthetic manifests should be valid: {errs}")
 
+    def test_schema_fold_catches_bad_homography(self):
+        import tempfile
+        import yaml as _yaml
+        if vm.jsonschema is None:
+            self.skipTest("jsonschema not installed; schema fold unavailable")
+        with tempfile.TemporaryDirectory() as d:
+            synth.generate(Path(d))
+            mp = sorted(Path(d).glob("*.manifest.yaml"))[0]
+            doc = _yaml.safe_load(mp.read_text())
+            doc["calibrated"] = True
+            doc["calibration"] = {"homography": [1, 2, 3], "reprojection_rms": 1.0, "n_points": 4}  # len 3 != 9
+            mp.write_text(_yaml.safe_dump(doc))
+            errs, _ = vm.validate_path(Path(d))
+            self.assertTrue(any("schema" in e or "homography" in e for e in errs), errs)
+
+    def test_separation_angle(self):
+        m = {"zones": {"exit_vector": {"from": [0, 0], "to": [10, 0]},
+                       "checkout_vector": {"from": [0, 0], "to": [-10, 0]}}}
+        self.assertAlmostEqual(vm.separation_angle_deg(m), 180.0, places=3)
+        self.assertIsNone(vm.separation_angle_deg({"zones": {"exit_vector": {"from": [0, 0], "to": [1, 0]}}}))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -123,7 +123,8 @@ def _manifest(clip_id, scenario, anchors):
         "calibrated": False,  # synthetic image space; uncalibrated -> relative anticipation only
         "split": "synthetic",  # plumbing only, NOT real-world proof (provenance is explicit, not by filename)
         "zones": {"shelf_zone": SHELF_ZONE, "occlusion_zone": OCCL_ZONE,
-                  "exit_vector": {"from": list(SHELF), "to": list(EXIT)}},
+                  "exit_vector": {"from": list(SHELF), "to": list(EXIT)},
+                  "checkout_vector": {"from": list(SHELF), "to": list(CHECKOUT)}},
         "tracks": {"primary_actor_track_id": "t-actor-1"},
         "anchors": anchors or {"event_complete_frame": None},
         "valid_prediction_window": {"start_frame": 0 if tau else None, "end_frame": (tau - 1) if tau else None},

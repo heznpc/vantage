@@ -13,6 +13,7 @@
 | **S5** | multi-person / accomplices | **"unsupported / low confidence"** (never silent mishandle) | scenario flagged out-of-support | system declares low confidence, does not assert a verdict | ❌ (out) |
 
 ## Notes
+- **S3 status:** `validate_manifest` currently *warns* on S3/S4/S5 (out-of-P0). At **M2** (DoD = pass S0–S3), **S3 graduates from warning → a required handled scenario** (the occlusion/ID-switch warning becomes a gate). Don't read today's "warning" as "permanently optional".
 - **S1 is the only existential one.** S0/S2/S3/S4 protect S1 from reading as luck (false positives, ambiguity, contamination, over-claim). S5 is a guardrail, not a feature.
 - **S2 vs S1** is the hardest discrimination (conceal-then-return vs conceal-then-exit) — the exit-direction + non-return is the signal, and it is exactly what BEV trajectory is supposed to add over pose-only.
 - **S4** enforces the R1 calibrated/uncalibrated boundary at the scenario level: an uncalibrated clip may still pass S1 in **relative** terms (alert before τ) but must not emit metric ETA/distance.

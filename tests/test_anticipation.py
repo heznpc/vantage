@@ -58,6 +58,18 @@ class TestAnticipation(unittest.TestCase):
         }}
         self.assertEqual(ant.decide(res)["verdict"], "inconclusive")
 
+    def test_fixed_thresholds_mode(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            synth.generate(Path(d))
+            clips = ant.load_clips(Path(d))
+            th = {"pose_only": 0.9, "pose_2d_traj": 0.95, "pose_bev": 0.95}
+            r1 = ant.evaluate(clips, th)
+            self.assertEqual(r1, ant.evaluate(clips, th))           # deterministic
+            self.assertEqual(r1["threshold_source"], "fixed-file")
+            for arm in ant.ARMS:
+                self.assertIsNotNone(r1["arms"][arm]["operating_point"])  # fixed theta always yields a point
+
     def test_pipeline_reproducible_and_schema_valid(self):
         with tempfile.TemporaryDirectory() as d:
             clips_dir = Path(d) / "clips"

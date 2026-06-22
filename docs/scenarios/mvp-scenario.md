@@ -41,6 +41,8 @@ and must not be used to judge the system.
 - **P1 data must include ≥1 *hard* case** where exit and checkout are only weakly separated in the
   image plane. If every clip has a cleanly separated exit (as the synthetic P0 set does), results
   read as "cherry-picked cameras where trajectory trivially works" — which defeats the 3-arm test.
+  Quantify "weakly separated" as **`angle(exit_vector, checkout_vector) ≤ 60°`**
+  (`eval/validate_manifest.py: separation_angle_deg`); manifests should carry `checkout_vector`.
 
 ## M2 — definition of done (redefined)
 

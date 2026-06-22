@@ -128,34 +128,44 @@ def _ap(scored: list) -> float:
     return ap
 
 
-def evaluate(clips: list[tuple[dict, dict]]) -> dict:
+def _point_at(arm: str, th: float, pos: list, neg: list, scores: dict):
+    """(recall, far, mean_tta) for one arm at one threshold."""
+    ttas = []
+    for c, m in pos:
+        w = m["valid_prediction_window"]
+        tau = m["anchors"]["event_complete_frame"]
+        t = first_alert(scores[id(c)][arm], w["start_frame"], w["end_frame"], th)
+        if t is not None:
+            ttas.append((tau - t) / m["fps"])
+    recall = len(ttas) / len(pos) if pos else 0.0
+    fired_neg = sum(1 for c, _ in neg if max(scores[id(c)][arm]) >= th)
+    far = fired_neg / len(neg) if neg else 0.0
+    mean_tta = sum(ttas) / len(ttas) if ttas else 0.0
+    return recall, far, mean_tta
+
+
+def evaluate(clips: list[tuple[dict, dict]], thresholds: "dict | None" = None) -> dict:
     pos = [(c, m) for c, m in clips if m["scenario_id"] in POS_SCENARIOS]
     neg = [(c, m) for c, m in clips if m["scenario_id"] in NEG_SCENARIOS]
     scores = {id(c): arm_scores(c, m) for c, m in clips}
 
-    res = {"n_pos": len(pos), "n_neg": len(neg), "arms": {}}
+    res = {"n_pos": len(pos), "n_neg": len(neg), "arms": {},
+           "threshold_source": "fixed-file" if thresholds else "eval-sweep"}
     thetas = [round(0.05 * i, 2) for i in range(1, 21)]
     for arm in ARMS:
-        # AUC-PR over all clips (label=1 for S1), score = max risk in clip
         ap = _ap([(max(scores[id(c)][arm]), 1 if m["scenario_id"] in POS_SCENARIOS else 0)
                   for c, m in clips])
-        best = None  # feasible operating point (recall>=R AND far<=FAR_MAX) with MAX lead-time
-        for th in thetas:
-            ttas = []
-            for c, m in pos:
-                w = m["valid_prediction_window"]
-                tau = m["anchors"]["event_complete_frame"]
-                t = first_alert(scores[id(c)][arm], w["start_frame"], w["end_frame"], th)
-                if t is not None:
-                    ttas.append((tau - t) / m["fps"])
-            recall = len(ttas) / len(pos) if pos else 0.0
-            fired_neg = sum(1 for c, _ in neg if max(scores[id(c)][arm]) >= th)
-            far = fired_neg / len(neg) if neg else 0.0
-            if recall >= TARGET_RECALL and far <= FAR_MAX:  # same FAR budget for every arm
-                mean_tta = sum(ttas) / len(ttas) if ttas else 0.0
-                if best is None or mean_tta > best[3]:
-                    best = (th, recall, far, mean_tta)
-        res["arms"][arm] = {"auc_pr": ap, "operating_point": best}
+        if thresholds is not None:  # fixed theta chosen on a DEV split (P1 protocol; no eval-set tuning)
+            th = float(thresholds[arm])
+            op = (th, *_point_at(arm, th, pos, neg, scores))
+        else:  # dev sweep over the eval set -> plumbing only, never a P1 result
+            op = None
+            for th in thetas:
+                recall, far, mean_tta = _point_at(arm, th, pos, neg, scores)
+                if recall >= TARGET_RECALL and far <= FAR_MAX:  # same FAR budget for every arm
+                    if op is None or mean_tta > op[3]:
+                        op = (th, recall, far, mean_tta)
+        res["arms"][arm] = {"auc_pr": ap, "operating_point": op}
     return res
 
 
@@ -209,13 +219,16 @@ def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="3-arm anticipation eval (data-path)")
     p.add_argument("--clips-dir", default=str(CLIPS))
     p.add_argument("--out", default=str(ROOT / "eval" / "out" / "anticipation_result.csv"))
+    p.add_argument("--thresholds", default=None,
+                   help="YAML of per-arm fixed theta (P1: dev-selected). Omit -> dev-sweep on the eval set (plumbing only).")
     a = p.parse_args(argv)
     clips = load_clips(Path(a.clips_dir))
     if not clips:
         print(f"no clips in {a.clips_dir}", flush=True)
         return 2
+    thresholds = yaml.safe_load(Path(a.thresholds).read_text()) if a.thresholds else None
     data_kind = "/".join(sorted({m["split"] for _, m in clips}))  # provenance from manifest, not filename
-    res = evaluate(clips)
+    res = evaluate(clips, thresholds)
     dec = decide(res)
     rows = to_rows(res, dec, data_kind)
     out = Path(a.out)
@@ -228,7 +241,7 @@ def main(argv=None) -> int:
 
     banner = "PLUMBING ONLY (synthetic) — NOT a result about +BEV" if data_kind == "synthetic" \
         else f"data_kind={data_kind}"
-    print(f"[{banner}]  n_pos={res['n_pos']} n_neg={res['n_neg']}")
+    print(f"[{banner}]  n_pos={res['n_pos']} n_neg={res['n_neg']}  thresholds={res['threshold_source']}")
     for arm in ARMS:
         a_ = res["arms"][arm]
         t = a_["operating_point"]
