@@ -1,0 +1,50 @@
+# Example clip manifest (S1 core theft). Conforms to eval/schema/clip_manifest.schema.json.
+# This is a STAGED illustrative example — real clips (split: real) are required before any
+# anticipation number may be headlined (R1; owner decision #1). One file per clip.
+# Coordinates here are image pixels (calibrated: true would make them floor-plan metres).
+
+clip_id: store01_aisle3_S1_0007
+camera_id: cam-aisle3
+scenario_id: S1
+fps: 15
+calibrated: true          # floor homography available; reprojection RMS tracked separately
+split: staged             # NOT real — illustrative only
+
+zones:
+  shelf_zone:             # polygon (>=3 pts)
+    - [410, 220]
+    - [690, 220]
+    - [700, 470]
+    - [400, 470]
+  occlusion_zone:         # pillar that briefly hides the actor (drives S3 handling)
+    - [120, 240]
+    - [210, 240]
+    - [210, 520]
+    - [120, 520]
+  exit_vector:            # direction that counts as "toward exit" (NOT checkout)
+    from: [560, 640]
+    to:   [120, 360]
+
+tracks:
+  primary_actor_track_id: t-actor-1
+
+anchors:                  # 0-based frame indices; HUMAN-labeled
+  approach_start_frame: 60
+  item_interaction_start_frame: 95
+  concealment_start_frame: 140
+  event_complete_frame: 188   # tau — last frame theft is still in progress
+
+valid_prediction_window:  # an alert here counts as anticipation; end < tau
+  start_frame: 60
+  end_frame: 187          # tau - 1
+
+negative_controls:        # sibling clips used to bound false positives
+  normal_browse:
+    - store01_aisle3_S0_0003
+  item_returned:
+    - store01_aisle3_S2_0011
+
+notes: >
+  TTA is computed at eval time as (event_complete_frame - first_valid_alert)/fps, where
+  first_valid_alert is the model's earliest in-window frame with score >= theta. If the
+  model never alerts before frame 188, lead-time is 0 (detection, not anticipation).

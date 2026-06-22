@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vantage.local/schemas/clip_manifest.json",
+  "title": "Vantage clip manifest",
+  "description": "Per-clip scenario annotation for the MVP. event_complete_frame (tau) is HUMAN-labeled; first_valid_alert (t_theta) comes from the model at eval time and is NOT stored here. TTA = (tau - t_theta)/fps. Coordinate units are image pixels when calibrated=false and floor-plan metres when calibrated=true.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["clip_id", "camera_id", "scenario_id", "fps", "calibrated", "split", "zones", "tracks", "anchors", "valid_prediction_window"],
+  "properties": {
+    "clip_id": { "type": "string", "minLength": 1 },
+    "camera_id": { "type": "string", "minLength": 1 },
+    "scenario_id": { "enum": ["S0", "S1", "S2", "S3", "S4", "S5"] },
+    "fps": { "type": "number", "exclusiveMinimum": 0 },
+    "calibrated": { "type": "boolean" },
+    "split": { "enum": ["staged", "real"] },
+    "zones": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shelf_zone", "exit_vector"],
+      "properties": {
+        "shelf_zone": { "$ref": "#/$defs/polygon" },
+        "occlusion_zone": { "$ref": "#/$defs/polygon" },
+        "exit_vector": { "$ref": "#/$defs/vector" }
+      }
+    },
+    "tracks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary_actor_track_id"],
+      "properties": {
+        "primary_actor_track_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "anchors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_complete_frame"],
+      "description": "Frame indices (0-based). event_complete_frame is null for non-theft scenarios (S0/S2-returned). Human-labeled.",
+      "properties": {
+        "approach_start_frame": { "type": ["integer", "null"], "minimum": 0 },
+        "item_interaction_start_frame": { "type": ["integer", "null"], "minimum": 0 },
+        "concealment_start_frame": { "type": ["integer", "null"], "minimum": 0 },
+        "event_complete_frame": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "valid_prediction_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_frame", "end_frame"],
+      "description": "Window in which an alert counts as anticipation. end_frame must be < event_complete_frame (typically tau-1). Both null for non-theft scenarios.",
+      "properties": {
+        "start_frame": { "type": ["integer", "null"], "minimum": 0 },
+        "end_frame": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "negative_controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "normal_browse": { "type": "array", "items": { "type": "string" } },
+        "item_returned": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "point": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+    "polygon": { "type": "array", "items": { "$ref": "#/$defs/point" }, "minItems": 3 },
+    "vector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": { "from": { "$ref": "#/$defs/point" }, "to": { "$ref": "#/$defs/point" } }
+    }
+  }
+}
