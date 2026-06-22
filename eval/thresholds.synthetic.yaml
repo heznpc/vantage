@@ -1,0 +1,8 @@
+# Fixed per-arm decision thresholds (theta), selected on a DEV split — NOT the eval set.
+# P1 MUST use a fixed thresholds file like this: choosing theta on the eval set is
+# evaluation-set tuning and inflates every metric (anticipation-eval.md threshold protocol).
+# These synthetic values are illustrative only (P0 plumbing; not a result).
+# Usage: uv run python eval/anticipation.py --thresholds eval/thresholds.synthetic.yaml
+pose_only: 0.90
+pose_2d_traj: 0.95
+pose_bev: 0.95

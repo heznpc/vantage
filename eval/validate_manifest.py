@@ -15,12 +15,20 @@ stdlib + PyYAML only.
 from __future__ import annotations
 
 import glob
+import json
+import math
 import sys
 from pathlib import Path
 
 import yaml
 
+try:
+    import jsonschema  # optional: folds JSON-schema (shape) validation into this one command
+except ModuleNotFoundError:
+    jsonschema = None
+
 ROOT = Path(__file__).resolve().parents[1]
+SCHEMA_PATH = ROOT / "eval" / "schema" / "clip_manifest.schema.json"
 NEG = {"S0", "S2"}
 NOT_IN_P0 = {"S3", "S4", "S5"}
 CHAIN = ["approach_start_frame", "item_interaction_start_frame", "concealment_start_frame", "event_complete_frame"]
@@ -79,13 +87,47 @@ def validate_doc(m: dict) -> tuple[list[str], list[str]]:
     return errs, warns
 
 
+HARD_ANGLE_DEG = 60.0  # angle(exit, checkout) <= this => 'hard' (weakly separated) case
+
+
+def separation_angle_deg(m: dict):
+    """Angle (deg) between exit_vector and checkout_vector, or None if checkout_vector absent.
+    <= HARD_ANGLE_DEG marks a 'hard' clip; a P1 dataset must contain >=1 such clip so results
+    aren't read as 'cherry-picked cameras where trajectory trivially works'."""
+    z = m.get("zones", {})
+    ev, cv = z.get("exit_vector"), z.get("checkout_vector")
+    if not ev or not cv:
+        return None
+    ax, ay = ev["to"][0] - ev["from"][0], ev["to"][1] - ev["from"][1]
+    bx, by = cv["to"][0] - cv["from"][0], cv["to"][1] - cv["from"][1]
+    na, nb = math.hypot(ax, ay), math.hypot(bx, by)
+    if na < 1e-9 or nb < 1e-9:
+        return None
+    cos = max(-1.0, min(1.0, (ax * bx + ay * by) / (na * nb)))
+    return math.degrees(math.acos(cos))
+
+
+def _schema_errors(doc: dict, schema: "dict | None") -> list[str]:
+    if jsonschema is None or schema is None:
+        return []
+    cid = doc.get("clip_id", "?")
+    v = jsonschema.Draft202012Validator(schema)
+    return [f"{cid}: schema: {e.message} @ {'/'.join(map(str, e.path)) or '<root>'}"
+            for e in v.iter_errors(doc)]
+
+
 def validate_path(path: Path) -> tuple[list[str], list[str]]:
+    schema = json.loads(SCHEMA_PATH.read_text()) if SCHEMA_PATH.exists() else None
     files = ([str(path)] if path.is_file()
              else sorted(glob.glob(str(path / "*.manifest.yaml"))))
     errs: list[str] = []
     warns: list[str] = []
+    if jsonschema is None:
+        warns.append("jsonschema not installed -> shape validation skipped (semantic only)")
     for f in files:
-        e, w = validate_doc(yaml.safe_load(Path(f).read_text()))
+        doc = yaml.safe_load(Path(f).read_text())
+        errs += _schema_errors(doc, schema)
+        e, w = validate_doc(doc)
         errs += e
         warns += w
     return errs, warns

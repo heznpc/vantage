@@ -27,9 +27,15 @@ uv run python eval/validate_csv.py eval/out/bev.csv
 ## Data-path & 3-arm anticipation (P0)
 
 ```bash
-uv run python eval/synth.py          # (re)generate synthetic clips into eval/clips/
-uv run python eval/anticipation.py   # 3-arm: τ/t_θ → TTA@R80, AUC-PR + pre-registered BEV decision
+uv run python eval/synth.py            # (re)generate synthetic clips into eval/clips/
+uv run python eval/validate_manifest.py eval/clips   # JSON-schema (shape) + semantic gate, one command
+uv run python eval/anticipation.py     # 3-arm: τ/t_θ → TTA@R80, AUC-PR + pre-registered BEV decision (dev-sweep)
+uv run python eval/anticipation.py --thresholds eval/thresholds.synthetic.yaml  # fixed dev θ (P1 protocol)
 ```
+
+`validate_manifest.py` folds **JSON-schema shape** + **semantic** checks (S1 anchor chain, S0/S2 null τ,
+window<τ, `calibrated:true` ⇒ `calibration` block). Threshold selection: P0 dev-sweeps the eval set
+(**plumbing only**); **P1 must pass a fixed `--thresholds` file** chosen on a dev split — never sweep the eval set.
 
 The ablation that actually matters is **3-arm** — `pose_only` vs `pose_2d_traj` (image-plane
 exit motion, **no depth/BEV**) vs `pose_bev` (perspective-weighted pseudo-BEV). **BEV is a real

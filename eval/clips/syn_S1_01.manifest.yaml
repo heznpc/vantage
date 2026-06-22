@@ -16,6 +16,13 @@ valid_prediction_window:
   end_frame: 69
   start_frame: 0
 zones:
+  checkout_vector:
+    from:
+    - 640
+    - 300
+    to:
+    - 100
+    - 360
   exit_vector:
     from:
     - 640
