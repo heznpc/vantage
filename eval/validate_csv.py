@@ -42,8 +42,8 @@ def validate(csv_path: Path, schema_path: Path = DEFAULT_SCHEMA) -> list[str]:
             for col, vals in enums.items():
                 if rrow.get(col) not in vals:
                     errors.append(f"row {i}: {col}={rrow.get(col)!r} not in {sorted(vals)}")
-            for col in ("value", "ci_low", "ci_high"):
-                if not (rrow.get(col) or "").strip():
+            for col, spec in props.items():  # schema-driven non-empty (minLength>=1)
+                if spec.get("minLength", 0) >= 1 and not (rrow.get(col) or "").strip():
                     errors.append(f"row {i}: {col} is empty")
     return errors
 

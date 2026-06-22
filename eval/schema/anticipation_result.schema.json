@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vantage.local/schemas/anticipation_result_row.json",
+  "title": "anticipation_result row",
+  "description": "One row from eval/anticipation.py (3-arm data-path). 'value' etc. are strings; 'NA' allowed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["data_kind", "arm", "metric", "value", "threshold", "far", "recall", "notes"],
+  "properties": {
+    "data_kind": { "type": "string", "minLength": 1 },
+    "arm": { "enum": ["pose_only", "pose_2d_traj", "pose_bev", "decision"] },
+    "metric": { "enum": ["auc_pr", "tta_at_r80", "bev_decision"] },
+    "value": { "type": "string", "minLength": 1 },
+    "threshold": { "type": "string", "minLength": 1 },
+    "far": { "type": "string", "minLength": 1 },
+    "recall": { "type": "string", "minLength": 1 },
+    "notes": { "type": "string" }
+  }
+}

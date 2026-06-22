@@ -54,10 +54,10 @@ build/
 *.gguf
 weights/
 checkpoints/
-data/
-clips/
+# eval/clips/*.clip.json|*.manifest.yaml (synthetic pilot data) IS committed; raw video stays out:
 *.mp4
 *.avi
+*.mov
 # eval harness run outputs (generated)
 eval/out/
 
