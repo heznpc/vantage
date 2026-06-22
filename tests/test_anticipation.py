@@ -58,7 +58,7 @@ class TestAnticipation(unittest.TestCase):
         }}
         self.assertEqual(ant.decide(res)["verdict"], "inconclusive")
 
-    def test_fixed_thresholds_mode(self):
+    def test_fixed_thresholds_enforce_far_budget(self):
         import tempfile
         with tempfile.TemporaryDirectory() as d:
             synth.generate(Path(d))
@@ -67,8 +67,22 @@ class TestAnticipation(unittest.TestCase):
             r1 = ant.evaluate(clips, th)
             self.assertEqual(r1, ant.evaluate(clips, th))           # deterministic
             self.assertEqual(r1["threshold_source"], "fixed-file")
-            for arm in ant.ARMS:
-                self.assertIsNotNone(r1["arms"][arm]["operating_point"])  # fixed theta always yields a point
+            # pose_only @0.90 clears the budget; motion arms @0.95 sit at FAR=1.0 -> NOT feasible
+            self.assertIsNotNone(r1["arms"]["pose_only"]["operating_point"])
+            self.assertIsNone(r1["arms"]["pose_2d_traj"]["operating_point"])
+            self.assertIsNone(r1["arms"]["pose_bev"]["operating_point"])
+            # an arm over the FAR budget must NOT yield a rejected/accepted verdict
+            self.assertEqual(ant.decide(r1)["verdict"], "inconclusive")
+
+    def test_fixed_threshold_far_violation_records_raw_but_not_feasible(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            synth.generate(Path(d))
+            clips = ant.load_clips(Path(d))
+            r = ant.evaluate(clips, {"pose_only": 0.01, "pose_2d_traj": 0.01, "pose_bev": 0.01})
+            for arm in ant.ARMS:  # theta=0.01 fires on everything -> FAR=1.0 -> infeasible
+                self.assertIsNone(r["arms"][arm]["operating_point"])
+                self.assertIsNotNone(r["arms"][arm]["raw_point"])  # raw kept for diagnostics
 
     def test_pipeline_reproducible_and_schema_valid(self):
         with tempfile.TemporaryDirectory() as d:

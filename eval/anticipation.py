@@ -155,9 +155,14 @@ def evaluate(clips: list[tuple[dict, dict]], thresholds: "dict | None" = None) -
     for arm in ARMS:
         ap = _ap([(max(scores[id(c)][arm]), 1 if m["scenario_id"] in POS_SCENARIOS else 0)
                   for c, m in clips])
+        raw = None
         if thresholds is not None:  # fixed theta chosen on a DEV split (P1 protocol; no eval-set tuning)
             th = float(thresholds[arm])
-            op = (th, *_point_at(arm, th, pos, neg, scores))
+            recall, far, mean_tta = _point_at(arm, th, pos, neg, scores)
+            raw = (th, recall, far, mean_tta)
+            # fixed theta still must clear the SAME FAR/recall budget as the sweep, else it is NOT
+            # a valid operating point (an arm at FAR=1.0 must not count as feasible).
+            op = raw if (recall >= TARGET_RECALL and far <= FAR_MAX) else None
         else:  # dev sweep over the eval set -> plumbing only, never a P1 result
             op = None
             for th in thetas:
@@ -165,7 +170,7 @@ def evaluate(clips: list[tuple[dict, dict]], thresholds: "dict | None" = None) -
                 if recall >= TARGET_RECALL and far <= FAR_MAX:  # same FAR budget for every arm
                     if op is None or mean_tta > op[3]:
                         op = (th, recall, far, mean_tta)
-        res["arms"][arm] = {"auc_pr": ap, "operating_point": op}
+        res["arms"][arm] = {"auc_pr": ap, "operating_point": op, "raw_point": raw}
     return res
 
 
@@ -206,9 +211,17 @@ def to_rows(res: dict, dec: dict, data_kind: str) -> list[dict]:
                          "value": f"{tta:.4f}", "threshold": f"{th:.2f}", "far": f"{far:.2f}",
                          "recall": f"{rc:.2f}", "notes": "seconds @ FAR-constrained op point"})
         else:
-            rows.append({"data_kind": data_kind, "arm": arm, "metric": "tta_at_r80",
-                         "value": "NA", "threshold": "NA", "far": "NA", "recall": "NA",
-                         "notes": f"no feasible op point (recall>={TARGET_RECALL} & FAR<={FAR_MAX})"})
+            raw = a.get("raw_point")
+            if raw:  # fixed theta that failed the budget -> show WHY (far/recall), value stays NA
+                th, rc, far, tta = raw
+                rows.append({"data_kind": data_kind, "arm": arm, "metric": "tta_at_r80",
+                             "value": "NA", "threshold": f"{th:.2f}", "far": f"{far:.2f}",
+                             "recall": f"{rc:.2f}",
+                             "notes": f"infeasible @ fixed theta: needs recall>={TARGET_RECALL} & FAR<={FAR_MAX}"})
+            else:
+                rows.append({"data_kind": data_kind, "arm": arm, "metric": "tta_at_r80",
+                             "value": "NA", "threshold": "NA", "far": "NA", "recall": "NA",
+                             "notes": f"no feasible op point (recall>={TARGET_RECALL} & FAR<={FAR_MAX})"})
     rows.append({"data_kind": data_kind, "arm": "decision", "metric": "bev_decision",
                  "value": dec["verdict"], "threshold": "NA", "far": "NA", "recall": "NA",
                  "notes": dec["reason"]})
